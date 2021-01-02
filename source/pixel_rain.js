@@ -43,7 +43,7 @@
                   throw new TypeError('pixelRain: second parameter must be an Image')
             }
             if (
-                  typeof particleSize !== 'number' && typeof particleCount !== 'number' && typeof particleSpeed !== 'number'
+                  typeof particleSize !== 'number' || typeof particleCount !== 'number' || typeof particleSpeed !== 'number'
                   && typeof brightness !== 'number'      
             ){
                   throw new TypeError('pixelRain: third and fourth and fifth parameter must be a Number')
