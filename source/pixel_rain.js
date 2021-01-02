@@ -28,8 +28,9 @@
        * @param {Number} particleSize will not accept 0 or negative
        * @param {Number} particleCount defaults to 5000
        * @param {Number} speed will not accept 0 or negative
+       * @param {Number} brigthness defaults to 10
        */
-    function pixelRain (canvas, image, particleSize = 1.5, particleCount = 5000, particleSpeed = 1.5) {
+    function pixelRain (canvas, image, particleSize = 1.5, particleCount = 5000, particleSpeed = 1.5, brightness = 10) {
             
             // Try Catches 
             let ctx
@@ -41,7 +42,10 @@
             if (!(image instanceof Image)) {
                   throw new TypeError('pixelRain: second parameter must be an Image')
             }
-            if (typeof particleSize !== 'number' && typeof particleCount !== 'number' && typeof particleSpeed !== 'number'){
+            if (
+                  typeof particleSize !== 'number' && typeof particleCount !== 'number' && typeof particleSpeed !== 'number'
+                  && typeof brightness !== 'number'      
+            ){
                   throw new TypeError('pixelRain: third and fourth and fifth parameter must be a Number')
             } else {
                   // will not allow 0 or negative
@@ -51,16 +55,19 @@
                   if (particleSpeed === 0) particleSpeed = 1.5
                   particleSpeed = Math.abs(particleSpeed)
 
+                  brightness = Math.abs(brightness)
+
                   // will not allow negative or fraction
                   particleCount = Math.abs(Math.floor(particleCount))
             }
+
 
             image.addEventListener('load', ()=> {
                   let particles = []
                   const numberOfParticles = particleCount
       
                   for (let i = 0; i <= numberOfParticles; i++) {
-                        particles.push(new Particle(canvas, particleSize, particleSpeed))    
+                        particles.push(new Particle(canvas, particleSize, particleSpeed, brightness))    
                   }
       
                   // Getting pixel data then creating a matrix of the brightness of each pixel
@@ -115,12 +122,13 @@
 
     // Private Variables
     class Particle {
-          constructor(canvas, size, velocity) {
+          constructor(canvas, size, velocity, brightness) {
                 this.x = Math.random() * canvas.width
                 this.y = 0
                 this.speed = 0
                 this.velocity = Math.random() * velocity
                 this.size = Math.random() * size
+                this.additiveBrigthness = brightness
           }
 
           step(ctx, image, matrix) {
@@ -152,7 +160,7 @@
                 } else {
                      pixel = {r: 0, g: 0, b: 0}
                 }
-                ctx.fillStyle = `rgb(${pixel.r}, ${pixel.g}, ${pixel.b})`
+                ctx.fillStyle = `rgb(${pixel.r + this.additiveBrigthness}, ${pixel.g + this.additiveBrigthness}, ${pixel.b + this.additiveBrigthness})`
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
                 ctx.fill()
           }
