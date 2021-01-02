@@ -34,7 +34,7 @@
             
             // Try Catches 
             let ctx
-            if (canvas.getContext('2d') !== null) {
+            if (typeof canvas.getContext == 'function') {
                   ctx = canvas.getContext('2d')
             } else {
                   throw new TypeError('pixelRain: first parameter must be HTML Canvas element')
@@ -46,7 +46,7 @@
                   typeof particleSize !== 'number' || typeof particleCount !== 'number' || typeof particleSpeed !== 'number'
                   && typeof brightness !== 'number'      
             ){
-                  throw new TypeError('pixelRain: third and fourth and fifth parameter must be a Number')
+                  throw new TypeError('pixelRain: the last four params must be numbers')
             } else {
                   // will not allow 0 or negative
                   if (particleSize === 0) particleSize = 1
