@@ -20,7 +20,15 @@
 
 ;(function(){
 
-    function pixelRain (canvas, image, colorDelay = 3) {
+      /**
+       * Convert an image into an animation of raining particles!
+       * @param {Canvas Element} canvas 
+       * @param {Image} image preffered base64
+       * @param {Number} particleSize will not accept 0 or negative
+       * @param {Number} particleCount defaults to 5000
+       * @param {Number} speed will not accept 0 or negative
+       */
+    function pixelRain (canvas, image, particleSize = 1.5, particleCount = 5000, particleSpeed = 1.5) {
             
             // Try Catches 
             let ctx
@@ -32,32 +40,44 @@
             if (!(image instanceof Image)) {
                   throw new TypeError('pixelRain: second parameter must be an Image')
             }
-            if (typeof colorDelay !== 'number') {
-                  throw new TypeError('pixelRain: third parameter is to be a Number')
+            if (typeof particleSize !== 'number' && typeof particleCount !== 'number' && typeof particleSpeed !== 'number'){
+                  throw new TypeError('pixelRain: third and fourth and fifth parameter must be a Number')
+            } else {
+                  // will not allow 0 or negative
+                  if (particleSize === 0) particleSize = 1
+                  particleSize = Math.abs(particleSize)
+
+                  if (particleSpeed === 0) particleSpeed = 1.5
+                  particleSpeed = Math.abs(particleSpeed)
+
+                  // will not allow negative or fraction
+                  particleCount = Math.abs(Math.floor(particleCount))
             }
 
             image.addEventListener('load', ()=> {
                   let particles = []
-                  const numberOfParticles = 5000
+                  const numberOfParticles = particleCount
       
                   for (let i = 0; i <= numberOfParticles; i++) {
-                        particles.push(new Particle(canvas))    
+                        particles.push(new Particle(canvas, particleSize, particleSpeed))    
                   }
       
                   // Getting pixel data then creating a matrix of the brightness of each pixel
-                  let pixels = ctx.getImageData(0, 0, canvas.width, canvas.height)
+                  ctx.drawImage(image, 0, 0, image.width, image.height)
+                  let pixels = ctx.getImageData(0, 0, image.width, image.height)
                   let brightnessMatrix = []
-                  for (let y = 0; y < canvas.height; y++) {
+                  for (let y = 0; y < image.height; y++) {
                         let row = []
-                        for (let x = 0; x < canvas.width; x++) {
+                        for (let x = 0; x < image.width; x++) {
                               const red = pixels.data[(y * 4 * pixels.width) + (x * 4)]
                               const green = pixels.data[(y * 4 * pixels.width) + (x * 4 + 1)]
                               const blue = pixels.data[(y * 4 * pixels.width) + (x * 4 + 2)]
                               const cellBrightness = (caculateRelativeBrightness(red, green, blue))
-                              row.push(cellBrightness)
+                              row.push({r: red, g: green, b: blue, lum: cellBrightness})
                         }
                         brightnessMatrix.push(row)
                   }
+                  ctx.clearRect(0, 0, canvas.width, canvas.height)
 
                   /**
                    * The human eye sees the brightness of different colors differently. 
@@ -68,20 +88,21 @@
                    * @param {number} blue 
                    */
                   function caculateRelativeBrightness(red, green, blue) {
-                        return Math.sqrt(
-                              (red * red) * 0.299 +
-                              (green * green) * 0.587 +
-                              (blue * blue) * 0.114
-                        )
+                        return Math.floor(
+                              Math.sqrt(
+                                    (red * red) * 0.299 +
+                                    (green * green) * 0.587 +
+                                    (blue * blue) * 0.114
+                              )
+                        )/100
                   }
     
                   function animate() {
-                        ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
                         ctx.globalAlpha = 0.05
                         ctx.fillStyle = 'rgb(0, 0, 0)'
-                        ctx.fillRect(0, 0, canvas.width, canvas.height)
+                        ctx.fillRect(0, 0, image.width, image.height)
                         for (let particle of particles) {
-                              particle.step(ctx, canvas)
+                              particle.step(ctx, image, brightnessMatrix)
                         }
                         requestAnimationFrame(animate)
                   }
@@ -93,37 +114,47 @@
 
     // Private Variables
     class Particle {
-          constructor(canvas) {
+          constructor(canvas, size, velocity) {
                 this.x = Math.random() * canvas.width
                 this.y = 0
                 this.speed = 0
-                this.velocity = Math.random() * 3.5
-                this.size = Math.random() * 1.5 + 1
+                this.velocity = Math.random() * velocity
+                this.size = Math.random() * size
           }
 
-          step(ctx, canvas) {
-                this.update(canvas)
-                this.draw(ctx)
+          step(ctx, image, matrix) {
+                this.update(image, matrix)
+                ctx.globalAlpha = this.speed * 0.2
+                this.draw(ctx, matrix)
           }
 
-          update(canvas) {
-                this.y += this.velocity
-                if (this.y >= canvas.height) {
+          update(image, matrix) {
+
+                if (matrix[Math.floor(this.y)][Math.floor(this.x)] !== undefined) {
+                      this.speed = matrix[Math.floor(this.y)][Math.floor(this.x)].lum
+                }
+
+                // we want pixels to slow down the brighter the pixel
+                let movement = (2.5 - this.speed) + this.velocity
+                this.y += movement
+                if (this.y >= image.height) {
                       this.y = 0
-                      this.x = Math.random() * canvas.width
+                      this.x = Math.random() * image.width
                 } 
           }
 
-          draw(ctx) {
+          draw(ctx, matrix) {
                 ctx.beginPath()
-                ctx.fillStyle = 'white'
+                let pixel
+                if (matrix[Math.floor(this.y)][Math.floor(this.x)] !== undefined) {
+                     pixel = matrix[Math.floor(this.y)][Math.floor(this.x)]
+                } else {
+                     pixel = {r: 0, g: 0, b: 0}
+                }
+                ctx.fillStyle = `rgb(${pixel.r}, ${pixel.g}, ${pixel.b})`
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
                 ctx.fill()
           }
-    }
-
-    function lerp(initial, final, factor) {
-        return initial + (final - initial) * factor
     }
 
     // Export pixelRain Function
