@@ -1,10 +1,29 @@
+// Jinn Foxx - 2020
 // Original Artist - Frank from Franks Laboratory
 // https://www.youtube.com/watch?v=RCVxXgJ8xSk&ab_channel=Frankslaboratory
 
 ;(function(){
 
-    function pixelRain (cavnas, image, colorDelay = 3) {
+    function pixelRain (canvas, image, colorDelay = 3) {
+            
+            // Try Catches 
+            let ctx
+            if (canvas.getContext('2d') !== null) {
+                  ctx = canvas.getContext('2d')
+            } else {
+                  throw new TypeError('pixelRain: first parameter must be HTML Canvas element')
+            }
+            if (!(image instanceof Image)) {
+                  throw new TypeError('pixelRain: second parameter must be an Image')
+            }
+            if (typeof colorDelay !== 'number') {
+                  throw new TypeError('pixelRain: third parameter is to be a Number')
+            }
 
+            image.addEventListener('load', ()=> {
+                  ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+            })
+    
     }
 
     function animate() {
