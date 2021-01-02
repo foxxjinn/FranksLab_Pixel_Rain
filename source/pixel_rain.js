@@ -22,6 +22,7 @@
 
       /**
        * Convert an image into an animation of raining particles!
+       * It's important to note this will not work if the canvas is smaller than the image
        * @param {Canvas Element} canvas 
        * @param {Image} image preffered base64
        * @param {Number} particleSize will not accept 0 or negative
@@ -156,6 +157,8 @@
                 ctx.fill()
           }
     }
+
+
 
     // Export pixelRain Function
     if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
