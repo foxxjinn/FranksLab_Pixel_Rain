@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Rain Example</title>
+</head>
+<body>
+    <canvas id='myCanvas'></canvas>
+</body>
+<script src="../source/pixel_rain.js"></script>
+<script>
+    const myCanvas = document.getElementById('myCanvas')
+    const myImage = new Image(665, 715)
+    myImage.src = 'franks-laboratory.png'
+    pixelRain(myCanvas, myImage, 2)
+</script>
+</html>
