@@ -166,19 +166,16 @@
           }
     }
 
-
-
     // Export pixelRain Function
     if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
-
         // AMD. Register as an anonymous module.
         define(function() {
           return pixelRain;
         });
-      } else if (typeof module !== 'undefined' && module.exports) {
+    } else if (typeof module !== 'undefined' && module.exports) {
             module.exports = pixelRain;
-            module.exports.spinnyButton = pixelRain;
-      } else {
-            window.pixelRain = pixelRain;
-      }
+            module.exports.pixelRain = pixelRain;
+    } else {
+        window.pixelRain = pixelRain;
+    }
 }());
